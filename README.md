@@ -1,7 +1,7 @@
 # 💄 Maquiando o Professor Pedro
 
 Jogo interativo feito em HTML, CSS e JavaScript puro para a ETEC.
-Link do jogo: https://SEU-USUARIO.github.io/Pedro-Beauty-Studio-/
+Link do jogo: https://elloavieira.github.io/Pedro-Beauty-Studio-/
 
 ### Como jogar
 1. Clica em JOGAR na capa
@@ -46,4 +46,4 @@ Link do jogo: https://SEU-USUARIO.github.io/Pedro-Beauty-Studio-/
 - `capa.jpg`: imagem da capa inicial
 - `expressoes.jpg`: imagem única com as 20 expressões do professor
 
-Feito por alunos da ETEC.
+Feito por Elloa vieira e Bruna Burgos alunas 1° ds n 
