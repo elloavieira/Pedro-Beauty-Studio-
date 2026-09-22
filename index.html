@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<title>Maquiando Professor Pedro - Só Maquiagem</title>
+<style>
+body{margin:0;background:#ffb6dd;display:flex;justify-content:center;font-family:Arial}
+.game{width:1260px;background:#fff0f8;border:5px solid #ff5ca8;border-radius:24px;overflow:hidden;position:relative;margin-top:5px}
+#capa{position:absolute;inset:0;background:url('capa.jpg') center/cover no-repeat;z-index:100;display:flex;align-items:flex-end;justify-content:center;padding-bottom:60px;cursor:pointer}
+#play{padding:20px 70px;background:#ff5ca8;color:#fff;border:4px solid #fff;border-radius:60px;font-size:38px;font-weight:bold}
+.top{display:flex;gap:10px;padding:12px;background:#ffe0f0;align-items:center;border-bottom:3px solid #ff8ac6}
+.top-title{background:#ff5ca8;color:#fff;padding:10px 16px;border-radius:16px;border:3px solid #fff;font-weight:bold;display:flex;align-items:center;gap:12px;min-width:185px}
+.mini{width:48px;height:48px;background:url('expressoes.jpg');background-size:500% 400%;border-radius:12px;border:2px solid #fff}
+.grid{display:grid;grid-template-columns:repeat(10,1fr);gap:6px;flex:1}
+.e{aspect-ratio:1;background:url('expressoes.jpg');background-size:500% 400%;border:3px solid #fff;border-radius:12px;cursor:pointer}
+.e.active{border-color:#ff1493;transform:scale(1.1)}
+.main{display:grid;grid-template-columns:180px 1fr 300px;gap:12px;padding:12px;height:740px;background:#ffd6ec}
+.side{background:#fff;border:3px solid #ff8ac6;border-radius:18px;padding:12px;overflow:auto}
+.btn{width:100%;padding:10px;border-radius:12px;border:none;margin-bottom:6px;background:#eac6ff;font-weight:bold;cursor:pointer;border:2px solid #fff}
+.btn.active{background:#ff5ca8;color:#fff}
+.center{position:relative;background:#000;border-radius:20px;border:4px solid #ff8ac6;overflow:hidden;touch-action:none}
+#face{width:100%;height:100%;background:url('expressoes.jpg');background-size:500% 400%;position:absolute;inset:0}
+canvas{position:absolute;inset:0;width:100%;height:100%}
+#cBatom,#cBlush,#cSombra{pointer-events:none}
+#canvasPaint{z-index:5;cursor:crosshair}
+.opt{width:40px;height:40px;border-radius:10px;border:3px solid #fff;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;margin:3px;background:#fff;box-shadow:0 2px 0 #ff8ac6}
+</style>
+</head>
+<body>
+<div class="game">
+<div id="capa" onclick="this.style.display='none'"><div id="play">▶ JOGAR</div></div>
+<div class="top"><div class="top-title"><div class="mini" id="mini"></div><div>Maquiando<br>Professor Pedro</div></div><div class="grid" id="grid"></div></div>
+<div class="main">
+<div class="side">
+<button class="btn active" data-c="batom">💄 Batom (24 cores)</button>
+<button class="btn" data-c="blush">🥰 Blush (18 cores)</button>
+<button class="btn" data-c="sombra">👁️ Sombra (20 cores)</button>
+<button class="btn" style="background:#ffc2d8;margin-top:12px;font-size:11px" onclick="clearLayer('batom')">🧹 Só Batom</button>
+<button class="btn" style="background:#ffc2d8;font-size:11px" onclick="clearLayer('blush')">🧹 Só Blush</button>
+<button class="btn" style="background:#ffc2d8;font-size:11px" onclick="clearLayer('sombra')">🧹 Só Sombra</button>
+<button class="btn" style="background:#fff;border:2px solid #ff5ca8;margin-top:8px" onclick="clearAll()">✨ Limpar Tudo</button>
+</div>
+<div class="center" id="center">
+<div id="face"></div>
+<canvas id="cBatom"></canvas>
+<canvas id="cBlush"></canvas>
+<canvas id="cSombra"></canvas>
+<canvas id="canvasPaint"></canvas>
+</div>
+<div class="side" id="right"></div>
+</div>
+</div>
+<script>
+const grid=document.getElementById('grid'),face=document.getElementById('face'),mini=document.getElementById('mini'),center=document.getElementById('center'),right=document.getElementById('right');
+const cBatom=document.getElementById('cBatom'),cBlush=document.getElementById('cBlush'),cSombra=document.getElementById('cSombra'),cPaint=document.getElementById('canvasPaint');
+const ctxB=cBatom.getContext('2d'),ctxBl=cBlush.getContext('2d'),ctxS=cSombra.getContext('2d');
+let W,H;function resize(){[cBatom,cBlush,cSombra,cPaint].forEach(c=>{c.width=center.clientWidth;c.height=center.clientHeight});W=center.clientWidth;H=center.clientHeight;}setTimeout(resize,100);window.addEventListener('resize',resize);
+const pos=[{t:62.2,l:50.5,w:10,h:4.8,bt:54.5,bl1:31,bl2:69,st:42.5},{t:62,l:50.5,w:10.5,h:4.3,bt:53.5,bl1:31,bl2:69,st:41.5},{t:62.5,l:51,w:10,h:4.1,bt:54,bl1:31,bl2:69,st:42},{t:63.8,l:50.5,w:7.2,h:6.2,bt:55,bl1:31,bl2:69,st:41},{t:62.2,l:50.5,w:10,h:4.5,bt:54.5,bl1:31,bl2:69,st:42.5},{t:63,l:50.5,w:10,h:4.5,bt:56,bl1:30,bl2:70,st:43.5},{t:62.8,l:50.5,w:10,h:4.1,bt:54,bl1:31,bl2:69,st:41},{t:64.8,l:50.8,w:11.5,h:7.2,bt:53,bl1:30,bl2:69,st:40.5},{t:62.5,l:50.5,w:10,h:4.3,bt:54,bl1:31,bl2:69,st:42},{t:62.2,l:50.5,w:10,h:4.5,bt:54.5,bl1:31,bl2:69,st:44},{t:61.8,l:50.2,w:9.5,h:4.1,bt:54,bl1:31,bl2:69,st:41},{t:62.2,l:50.5,w:10,h:4.5,bt:54.5,bl1:31,bl2:69,st:42.5},{t:62,l:50.5,w:10,h:4.4,bt:54,bl1:31,bl2:69,st:42},{t:64.2,l:51,w:10.2,h:6.2,bt:53.5,bl1:31,bl2:69,st:41},{t:63.2,l:52,w:8,h:5.2,bt:54,bl1:31,bl2:69,st:42},{t:62.5,l:50.5,w:10,h:4.5,bt:55,bl1:31,bl2:69,st:42},{t:60.8,l:50.5,w:9.2,h:5.2,bt:54,bl1:31,bl2:69,st:42},{t:61.5,l:50.5,w:9.5,h:4.2,bt:54,bl1:31,bl2:69,st:42},{t:62,l:50.5,w:10,h:4.5,bt:54.5,bl1:31,bl2:69,st:40.5},{t:65,l:50.5,w:10,h:4.2,bt:56,bl1:30,bl2:70,st:43}];
+let idx=0,cat='batom',cor='#ff0033',size=22,painting=false;
+function getAreas(i){let p=pos[i];return{lip:{x:p.l/100*W,y:p.t/100*H,rx:p.w/100*W*0.8,ry:p.h/100*H*1.6},blushL:{x:p.bl1/100*W,y:p.bt/100*H,rx:0.08*W,ry:0.07*H},blushR:{x:p.bl2/100*W,y:p.bt/100*H,rx:0.08*W,ry:0.07*H},shadL:{x:0.395*W,y:p.st/100*H,rx:0.10*W,ry:0.06*H},shadR:{x:0.608*W,y:p.st/100*H,rx:0.10*W,ry:0.06*H}};}
+function inside(px,py,e){let dx=(px-e.x)/e.rx,dy=(py-e.y)/e.ry;return dx*dx+dy*dy<=1.4;}
+function paint(x,y){let a=getAreas(idx);let ctx=null,ok=false;if(cat=='batom'){ctx=ctxB;ok=inside(x,y,a.lip);}if(cat=='blush'){ctx=ctxBl;ok=inside(x,y,a.blushL)||inside(x,y,a.blushR);}if(cat=='sombra'){ctx=ctxS;ok=inside(x,y,a.shadL)||inside(x,y,a.shadR);}if(!ok||!ctx)return;ctx.fillStyle=cor;ctx.beginPath();ctx.arc(x,y,size/2,0,Math.PI*2);ctx.fill();}
+cPaint.addEventListener('mousedown',e=>{painting=true;let r=cPaint.getBoundingClientRect();paint(e.clientX-r.left,e.clientY-r.top);});
+cPaint.addEventListener('mousemove',e=>{if(!painting)return;let r=cPaint.getBoundingClientRect();paint(e.clientX-r.left,e.clientY-r.top);});
+window.addEventListener('mouseup',()=>painting=false);
+cPaint.addEventListener('touchstart',e=>{e.preventDefault();painting=true;let r=cPaint.getBoundingClientRect();let t=e.touches[0];paint(t.clientX-r.left,t.clientY-r.top);},{passive:false});
+cPaint.addEventListener('touchmove',e=>{e.preventDefault();let r=cPaint.getBoundingClientRect();let t=e.touches[0];paint(t.clientX-r.left,t.clientY-r.top);},{passive:false});
+function clearLayer(t){if(t=='batom')ctxB.clearRect(0,0,W,H);if(t=='blush')ctxBl.clearRect(0,0,W,H);if(t=='sombra')ctxS.clearRect(0,0,W,H);}
+function clearAll(){ctxB.clearRect(0,0,W,H);ctxBl.clearRect(0,0,W,H);ctxS.clearRect(0,0,W,H);}
+for(let r=0;r<4;r++){for(let c=0;c<5;c++){let d=document.createElement('div');let i=r*5+c;d.className='e';d.style.backgroundPosition=(c*25)+'% '+(r*33.333)+'%';d.onclick=()=>{face.style.backgroundPosition=(c*25)+'% '+(r*33.333)+'%';mini.style.backgroundPosition=(c*25)+'% '+(r*33.333)+'%';document.querySelectorAll('.e').forEach(x=>x.classList.remove('active'));d.classList.add('active');idx=i;};if(i==0)d.classList.add('active');grid.appendChild(d);}}
+const cores={
+batom:['#ff0033','#e6004c','#cc0044','#990033','#ff1a4d','#ff4d6d','#ff6b81','#ff8fab','#ff3366','#ff1493','#d81b60','#ad1457','#880e4f','#ff6f00','#ff8f00','#ffab40','#c2185b','#ff4081','#f50057','#ff80ab','#ff5252','#ff1744','#d50000','#a00000'],
+blush:['#ff8fab','#ff4d6d','#ff6b9d','#ffb3d1','#ff9a8f','#ff7f7f','#ff9999','#ffaaaa','#ff6e7f','#ff8a9d','#ff5e78','#ffc2d1','#ff8fa3','#ffa0b4','#ffb6c1','#ff8096','#ff6b81','#ff4a6b'],
+sombra:['#ff7eb8','#c084fc','#60a5fa','#4ade80','#fde047','#fb7185','#a78bfa','#f472b6','#f9a8d4','#c4b5fd','#93c5fd','#86efac','#fcd34d','#fca5a5','#d8b4fe','#a5b4fc','#6ee7b7','#fde68a','#f9a8d4','#ff8fab']
+};
+function render(){
+ let html='<div style="text-align:center;font-weight:bold;color:#c8006b;margin-bottom:6px">'+cat.toUpperCase()+'</div><div id="opts" style="text-align:center"></div>';
+ html+='<div style="margin-top:10px"><label style="font-size:11px">Tamanho pincel: <span id="sz">'+size+'</span></label><input type="range" min="8" max="40" value="'+size+'" style="width:100%" oninput="size=this.value;document.getElementById(\'sz\').innerText=this.value"></div>';
+ right.innerHTML=html;
+ let opts=document.getElementById('opts');
+ cores[cat].forEach(col=>{
+  let b=document.createElement('div');b.className='opt';if(col==cor)b.classList.add('sel');b.style.background=col;
+  b.addEventListener('click',()=>{cor=col;document.querySelectorAll('.opt').forEach(x=>x.classList.remove('sel'));b.classList.add('sel');});
+  opts.appendChild(b);
+ });
+}
+document.querySelectorAll('.btn[data-c]').forEach(b=>{
+ b.addEventListener('click',()=>{
+  document.querySelectorAll('.btn[data-c]').forEach(x=>x.classList.remove('active'));
+  b.classList.add('active');cat=b.dataset.c;render();
+ });
+});
+render();
+</script>
+</body>
+</html>
