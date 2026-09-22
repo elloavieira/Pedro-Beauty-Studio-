@@ -21,4 +21,4 @@ Jogo em Python com Pygame - ETEC
 - **Validação**: `inside()` verifica se o mouse tá dentro da boca/bochecha/pálpebra pra não pintar fora
 - **Pygame**: desenha tudo em 60 FPS
 
-Versão original em HTML: https://elloavieira.github.io/Pedro-Beauty-Studio-/
+ https://elloavieira.github.io/Pedro-Beauty-Studio-/
